@@ -1,0 +1,21 @@
+Operations on the 'users' resource
+
+Usage: gws users [OPTIONS] <COMMAND>
+
+Commands:
+  getProfile  Gets the current user's Gmail profile.
+  stop        Stop receiving push notifications for the given user mailbox.
+  watch       Set up or update a push notification watch on the given user mailbox.
+  drafts      Operations on the 'drafts' resource
+  history     Operations on the 'history' resource
+  labels      Operations on the 'labels' resource
+  messages    Operations on the 'messages' resource
+  settings    Operations on the 'settings' resource
+  threads     Operations on the 'threads' resource
+  help        Print this message or the help of the given subcommand(s)
+
+Options:
+      --sanitize <TEMPLATE>  Sanitize API responses through a Model Armor template. Requires cloud-platform scope. Format: projects/PROJECT/locations/LOCATION/templates/TEMPLATE. Also reads GWS_SANITIZE_TEMPLATE env var.
+      --dry-run              Validate the request locally without sending it to the API
+      --format <FORMAT>      Output format: json (default), table, yaml, csv
+  -h, --help                 Print help

@@ -1,0 +1,24 @@
+# Credentials
+.env
+token.json
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+venv/
+ENV/
+
+# Temporary files
+.tmp/
+.agents/
+.gemini/antigravity/brain/
+*.rfc822
+*.json
+!skills-lock.json
+
+# Reports
+morning_briefing.html
+final_message.rfc822
