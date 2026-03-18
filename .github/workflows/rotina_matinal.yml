@@ -1,0 +1,52 @@
+name: Rotina Matinal do Gmail
+
+on:
+  # Permite que você clique em um botão para rodar manualmente e testar
+  workflow_dispatch: 
+  # Agendamento automático (Cron)
+  schedule:
+    # O GitHub Actions usa o fuso horário UTC. 
+    # 11:00 UTC equivale a 08:00 no Horário de Brasília.
+    - cron: '0 11 * * 1-5' # Roda às 11:00 UTC, de segunda a sexta.
+
+jobs:
+  run-morning-routine:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Fazer checkout do código
+      uses: actions/checkout@v4
+
+    - name: Configurar Node.js (Para o GWS CLI)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18' # [8]
+
+    - name: Instalar o Google Workspace CLI globalmente
+      run: npm install -g @googleworkspace/cli # [8]
+
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10' # [5]
+
+    - name: Instalar dependências do Python
+      run: |
+        python -m pip install --upgrade pip
+        pip install python-dotenv pytz # [5]
+        # Se você tiver um requirements.txt, descomente a linha abaixo:
+        # pip install -r requirements.txt
+
+    - name: Gerar arquivo de credenciais a partir do Secret
+      run: |
+        echo '${{ secrets.GWS_CREDENTIALS_JSON }}' > credenciais_gws.json
+
+    - name: Executar o script run_routine.py
+      env:
+        # Passa os secrets como variáveis de ambiente para a máquina virtual [6, 9]
+        GOOGLE_WORKSPACE_CLI_CLIENT_ID: ${{ secrets.GWS_CLIENT_ID }}
+        GOOGLE_WORKSPACE_CLI_CLIENT_SECRET: ${{ secrets.GWS_CLIENT_SECRET }}
+        GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE: "credenciais_gws.json" # [6]
+        GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND: "file" # Necessário para rodar sem interface gráfica (Ubuntu OS keyring ausente)
+      run: |
+        python run_routine.py # [2]
