@@ -17,6 +17,7 @@ ENV/
 .gemini/antigravity/brain/
 *.rfc822
 *.json
+
 !skills-lock.json
 
 # Reports

@@ -3,6 +3,7 @@ import json
 import os
 import sys
 from datetime import datetime, time
+import pytz
 from dotenv import load_dotenv
 
 # Load credentials from .env
@@ -18,10 +19,12 @@ CALENDARS = {
 }
 
 def get_events_for_calendar(calendar_id):
-    # Today's boundaries
-    now = datetime.now()
-    start_of_day = datetime.combine(now.date(), time.min).isoformat() + "Z"
-    end_of_day = datetime.combine(now.date(), time.max).isoformat() + "Z"
+    # Today's boundaries in America/Sao_Paulo
+    tz = pytz.timezone('America/Sao_Paulo')
+    now = datetime.now(tz)
+    
+    start_of_day = tz.localize(datetime.combine(now.date(), time.min)).isoformat()
+    end_of_day = tz.localize(datetime.combine(now.date(), time.max)).isoformat()
     
     args = [
         GWS_CMD, 'calendar', 'events', 'list',
@@ -30,6 +33,7 @@ def get_events_for_calendar(calendar_id):
             "timeMin": start_of_day,
             "timeMax": end_of_day,
             "singleEvents": True,
+            "timeZone": "America/Sao_Paulo",
             "orderBy": "startTime"
         }),
         '--format', 'json'
@@ -55,7 +59,8 @@ def generate_standup():
             if 'dateTime' in start_data:
                 # 2026-03-17T09:00:00-03:00 -> 09:00
                 dt = datetime.fromisoformat(start_data['dateTime'])
-                time_str = dt.strftime('%H:%M')
+                tz = pytz.timezone('America/Sao_Paulo')
+                time_str = dt.astimezone(tz).strftime('%H:%M')
             else:
                 time_str = "Dia todo"
                 

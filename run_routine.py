@@ -21,7 +21,11 @@ def ensure_label(label_name):
     try:
         # List labels
         list_args = [GWS_CMD, 'gmail', 'users', 'labels', 'list', '--params', '{"userId": "me"}', '--format', 'json']
-        result = subprocess.run(list_args, capture_output=True, text=True, check=True, encoding='utf-8')
+        result = subprocess.run(list_args, capture_output=True, text=True, encoding='utf-8')
+        if result.returncode != 0:
+            print(f">>> GWS Erro listar etiquetas: {result.stdout.strip()}")
+            return None
+            
         labels = json.loads(result.stdout).get('labels', [])
         
         for lb in labels:
@@ -35,10 +39,14 @@ def ensure_label(label_name):
             '--params', '{"userId": "me"}',
             '--json', json.dumps({"name": label_name, "labelListVisibility": "labelShow", "messageListVisibility": "show"})
         ]
-        create_result = subprocess.run(create_args, capture_output=True, text=True, check=True, encoding='utf-8')
+        create_result = subprocess.run(create_args, capture_output=True, text=True, encoding='utf-8')
+        if create_result.returncode != 0:
+            print(f">>> GWS Erro criar etiqueta {label_name}: {create_result.stdout.strip()}")
+            return None
+            
         return json.loads(create_result.stdout)['id']
     except Exception as e:
-        print(f"Erro ao gerenciar etiqueta {label_name}: {e}")
+        print(f"Erro python ao gerenciar etiqueta {label_name}: {e}")
         return None
 
 def archive_and_label(msg_ids, label_id):
@@ -57,9 +65,11 @@ def archive_and_label(msg_ids, label_id):
             })
         ]
         try:
-            subprocess.run(modify_args, capture_output=True, text=True, check=True)
+            res = subprocess.run(modify_args, capture_output=True, text=True)
+            if res.returncode != 0:
+                print(f">>> GWS Erro ao arquivar mensagem {msg_id}: {res.stdout.strip()}")
         except Exception as e:
-            print(f"Erro ao arquivar mensagem {msg_id}: {e}")
+            print(f">>> Erro python ao arquivar {msg_id}: {e}")
 
 def main():
     print("--- Iniciando Rotina Matinal (SEM LIMITES + ARQUIVAMENTO CONDICIONAL) ---")

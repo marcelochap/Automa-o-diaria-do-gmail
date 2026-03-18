@@ -87,6 +87,37 @@ def format_briefing(data):
     html += f"""
             <div style="{hr_style}"></div>
 
+            <!-- RESUMO DAS CATEGORIAS (SOP) -->
+            <h3 style="{h3_style}">📊 Resumo da Caixa de Entrada</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+    """
+    
+    stats = data.get('stats', {"Importante": 0, "Promoção": 0, "Newsletter": 0, "Outros": 0})
+    
+    categories_info = [
+        ("🚨 Importantes", stats.get("Importante", 0), accent_red, bg_critical, "Ação imediata. Clientes, equipe, alertas críticos ou aprovações."),
+        ("ℹ️ Outros (Infos)", stats.get("Outros", 0), text_secondary, "#f1f5f9", "Sem ação. Informes internos, alertas do sistema ou recibos."),
+        ("📰 Newsletters", stats.get("Newsletter", 0), "#854d0e", "#fefce8", "Leitura passiva. Boletins e informativos."),
+        ("🏷️ Promoções", stats.get("Promoção", 0), "#16a34a", "#f0fdf4", "Ignorados. Ofertas, descontos, vendas.")
+    ]
+    
+    for title, count, color, bg, desc in categories_info:
+        html += f"""
+                <div style="background-color: {bg}; padding: 15px; border-radius: 8px; border-left: 4px solid {color};">
+                    <div style="font-weight: bold; color: {color}; font-size: 14px; margin-bottom: 2px;">
+                        {title}: <span style="font-size: 16px;">{count}</span>
+                    </div>
+                    <div style="font-size: 11px; color: {text_secondary}; line-height: 1.4;">
+                        {desc}
+                    </div>
+                </div>
+        """
+        
+    html += "</div>"
+    
+    html += f"""
+            <div style="{hr_style}"></div>
+
             <!-- 3. EMAILS IMPORTANTES -->
             <h3 style="{h3_style}">🚨 Emails Importantes (Ação Imediata)</h3>
     """
@@ -191,6 +222,15 @@ if __name__ == "__main__":
         "processed_log": [
             {"subject": "Confirmação de Reserva"},
             {"subject": "Newsletter Diária"}
-        ]
+        ],
+        "stats": {
+            "Total": 6,
+            "Importante": 2,
+            "Promoção": 1,
+            "Newsletter": 1,
+            "Outros": 2
+        }
     }
+    import sys
+    sys.stdout.reconfigure(encoding='utf-8')
     print(format_briefing(test_data))
