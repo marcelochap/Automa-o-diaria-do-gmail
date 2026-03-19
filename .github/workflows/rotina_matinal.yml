@@ -48,5 +48,7 @@ jobs:
         GOOGLE_WORKSPACE_CLI_CLIENT_SECRET: ${{ secrets.GWS_CLIENT_SECRET }}
         GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE: "credenciais_gws.json" # [6]
         GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND: "file" # Necessário para rodar sem interface gráfica (Ubuntu OS keyring ausente)
+        # Adicione a linha abaixo apontando para a raiz e para as pastas de execução
+        PYTHONPATH: ".:agents/morning-email-triage/execution:agents/daily-standup-generator/execution"
       run: |
         python run_routine.py # [2]

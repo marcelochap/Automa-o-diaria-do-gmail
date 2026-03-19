@@ -5,7 +5,7 @@ import subprocess
 from datetime import datetime
 
 # Add paths for imports
-BASE_DIR = r'c:\Projetos Antigravity\Projetos Python\Projeto Automação de Email'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, 'agents', 'morning-email-triage', 'execution'))
 sys.path.append(os.path.join(BASE_DIR, 'agents', 'daily-standup-generator', 'execution'))
 sys.path.append(os.path.join(BASE_DIR, 'agents', 'morning-briefing-ui', 'execution'))
