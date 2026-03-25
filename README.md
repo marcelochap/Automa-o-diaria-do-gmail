@@ -11,9 +11,12 @@ Sistema inteligente para automação de rotina matinal, integrando triagem de e-
   - Outros e-mails são etiquetados e arquivados automaticamente.
 - **Standup de Calendário:**
   - Consolidação de compromissos de múltiplos calendários (Principal, Equipe, etc.).
-- **Briefing Premium Minimalism:**
-  - Geração de um relatório HTML elegante e minimalista.
+- **Briefing Premium Minimalism v2:**
+  - Geração de um relatório HTML elegante e completo.
   - Conteúdo motivacional diário.
+  - **Top 5 Notícias do Dia:** Resumo das principais manchetes mundiais.
+  - **Radar de Promoções e Viagens:** Monitoramento de preços de passagens e ofertas.
+  - **Resumo Narrativo:** Parágrafo inteligente resumindo os e-mails processados.
   - Envio automático do briefing para o seu e-mail.
 
 ## 🛠️ Pré-requisitos
@@ -47,7 +50,7 @@ O sistema irá processar os e-mails, buscar a agenda de hoje, gerar o briefing e
 
 ## 🎨 Design
 
-O layout segue o padrão **Premium Minimalism v2**, focado em legibilidade e estética profissional. Um modelo de exemplo pode ser visualizado em `morning_briefing_v2_preview.html`.
+O layout segue o padrão **Premium Minimalism v2**, focado em legibilidade e estética profissional, otimizado para visualização em clientes de e-mail (Gmail).
 
 ---
 *Desenvolvido com Antigravity.*

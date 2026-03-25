@@ -65,7 +65,7 @@ def archive_and_label(msg_ids, label_id):
             })
         ]
         try:
-            res = subprocess.run(modify_args, capture_output=True, text=True)
+            res = subprocess.run(modify_args, capture_output=True, text=True, encoding='utf-8')
             if res.returncode != 0:
                 print(f">>> GWS Erro ao arquivar mensagem {msg_id}: {res.stdout.strip()}")
         except Exception as e:

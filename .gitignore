@@ -2,6 +2,7 @@
 .env
 token.json
 credentials.json
+credenciais_gws.json
 
 # Python
 __pycache__/

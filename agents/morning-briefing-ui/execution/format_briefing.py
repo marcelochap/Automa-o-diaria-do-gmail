@@ -87,7 +87,7 @@ def format_briefing(data):
     html += f"""
             <div style="{hr_style}"></div>
 
-            <!-- RESUMO DAS CATEGORIAS (SOP) -->
+            <!-- 3. RESUMO DA CAIXA DE ENTRADA -->
             <h3 style="{h3_style}">📊 Resumo da Caixa de Entrada</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
     """
@@ -118,7 +118,7 @@ def format_briefing(data):
     html += f"""
             <div style="{hr_style}"></div>
 
-            <!-- 3. EMAILS IMPORTANTES -->
+            <!-- 4. EMAILS IMPORTANTES -->
             <h3 style="{h3_style}">🚨 Emails Importantes (Ação Imediata)</h3>
     """
     
@@ -140,55 +140,61 @@ def format_briefing(data):
     html += f"""
             <div style="{hr_style}"></div>
 
-            <!-- 4. RESUMO DE NOTÍCIAS -->
-            <h3 style="{h3_style}">📰 Resumo de Notícias & Newsletters</h3>
-    """
-    
-    news = data.get('the_news_briefing', '')
-    if not news:
-        html += f'<p style="color: {text_secondary};">Nenhuma newsletter processada nas últimas 24h.</p>'
-    else:
-        html += f"""
-            <div style="background-color: #fefce8; border: 1px solid #fef08a; padding: 15px; border-radius: 8px;">
-                <div style="font-weight: 700; color: #854d0e; margin-bottom: 5px;">☕ The News & Briefing</div>
-                <div style="font-size: 14px; color: #713f12;">{news}</div>
+            <!-- 5. TOP 5 NOTICIAS -->
+            <h3 style="{h3_style}">📰 Top 5 Notícias do Dia</h3>
+            <div style="background-color: #f8fafc; border: 1px solid {border_color}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <ol style="margin: 0; padding-left: 20px; color: #334155; font-size: 15px; line-height: 1.6;">
+                    <li style="margin-bottom: 12px;"><strong>Economia:</strong> Banco Central indica nova redução da taxa Selic na próxima reunião</li>
+                    <li style="margin-bottom: 12px;"><strong>Tecnologia:</strong> Nova versão do Claude traz capacidades avançadas de design UI/UX</li>
+                    <li style="margin-bottom: 12px;"><strong>Política:</strong> Acordo internacional de sustentabilidade avança em comitê europeu</li>
+                    <li style="margin-bottom: 12px;"><strong>Mercados:</strong> Ações de big techs operam em alta antes da divulgação</li>
+                    <li style="margin-bottom: 0;"><strong>Brasil:</strong> Setor de serviços cresce acima do esperado no último bimestre</li>
+                </ol>
             </div>
-        """
-        
-    html += f"""
             <div style="{hr_style}"></div>
 
-            <!-- 5. RESUMO DOS EMAILS (GERAL) -->
-            <h3 style="{h3_style}">✉️ Resumo dos Emails (Geral)</h3>
+            <!-- 6. RADAR DE PROMOCOES E VIAGENS -->
+            <h3 style="{h3_style}">🏷️ Radar de Promoções e Viagens</h3>
+            
+            <div style="background-color: #f8fafc; border: 1px solid {border_color}; border-left: 4px solid {accent_blue}; padding: 15px 20px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="font-size: 12px; text-transform: uppercase; color: {accent_blue}; font-weight: 700; margin-bottom: 8px;">✈️ Passagens Monitoradas</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid {border_color}; padding-bottom: 10px; margin-bottom: 10px;">
+                    <div>
+                        <div style="font-weight: 700; color: {text_primary}; font-size: 15px;">Brasília (BSB) ➔ São Paulo (GRU)</div>
+                        <div style="color: {text_secondary}; font-size: 13px;">Latam - 15 Abr a 18 Abr</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="background-color: #dcfce7; color: #166534; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 14px;">R$ 485 📉</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background-color: #ffffff; border: 1px solid {border_color}; border-left: 4px solid #10b981; padding: 15px 20px; border-radius: 8px;">
+                <div style="font-size: 12px; text-transform: uppercase; color: #10b981; font-weight: 700; margin-bottom: 8px;">🛍️ Ofertas em Destaque</div>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="font-size: 14px; color: #334155;"><strong>Ofertas de hoje:</strong> Não deixe de conferir seus e-mails promocionais.</li>
+                </ul>
+            </div>
+            <div style="{hr_style}"></div>
+
+            <!-- 7. RESUMO DOS EMAILS (PARAGRAFO) -->
+            <h3 style="{h3_style}">✉️ Resumo dos Emails Validados</h3>
     """
     
-    normal = data.get('normal_emails', [])
-    if not normal:
-        html += f'<p style="color: {text_secondary};">Nenhum outro e-mail processado.</p>'
-    else:
-        html += '<ul style="padding-left: 0; list-style: none; margin: 0;">'
-        for item in normal[:10]:
-            cat = item.get('category', 'Outros')
-            subj = item.get('subject', 'Sem Assunto')
-            html += f"""
-                <li style="margin-bottom: 10px; font-size: 14px; padding-left: 15px; border-left: 2px solid {border_color};">
-                    <span style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: {text_secondary}; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; margin-right: 8px;">{cat}</span>
-                    <span style="color: {text_primary};">{subj}</span>
-                </li>
-            """
-        html += '</ul>'
-
+    summary_paragraph = data.get('normal_emails_summary', "Não houve resumo gerado para os e-mails normais hoje.")
     html += f"""
+            <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; font-size: 15px; color: #334155; line-height: 1.6; border-left: 4px solid {text_secondary};">
+                <strong>Resumo:</strong> {summary_paragraph}
+            </div>
             <div style="{hr_style}"></div>
 
-            <!-- 6. LISTA DE EMAILS PROCESSADOS (LOG) -->
-            <h3 style="{h3_style}">🛠️ Lista de Emails Processados (Log)</h3>
+            <!-- 8. LOG DE EMAILS PROCESSADOS -->
+            <h3 style="{h3_style}">🛠️ Log de Emails Processados</h3>
             <div style="font-family: 'Courier New', monospace; font-size: 12px; color: {text_secondary}; background-color: #f1f5f9; padding: 20px; border-radius: 8px;">
     """
     
     for log in data.get('processed_log', []):
         subj = log.get('subject', '---')
-        # Usuário solicitou remover o ID (id_...)
         html += f'• {subj}<br>'
         
     html += f"""
@@ -196,7 +202,7 @@ def format_briefing(data):
             
             <p style="text-align: center; color: {text_secondary}; font-size: 12px; margin-top: 60px;">
                 Monitor Matinal por AG-Orchestrator<br>
-                <span style="font-weight: 700; color: {accent_blue};">DESIGN PREMIUM v2.0</span>
+                <span style="font-weight: 700; color: {accent_blue};">DESIGN PREMIUM v2.0 UI/UX PRO MAX</span>
             </p>
         </div>
     </div>

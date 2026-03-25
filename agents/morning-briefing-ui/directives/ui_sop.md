@@ -1,67 +1,44 @@
 # SOP: Morning Briefing UI Formatting
 
 ## Overview
-This directive defines the visual standards for the morning briefing email. The goal is "Premium Minimalism".
+This directive defines the visual standards for the morning briefing email. The goal is "Premium Minimalism v2", adapting UI/UX Pro Max principles to inline CSS limitations.
 
-## Structure Requirements (Strict Order)
+## Strict Order Requirements
 
-Follow this structure exactly:
+Follow this exact structure when generating or reviewing the briefing:
 
-1.  ### GREETING & MOTIVATION
-    * **Syntax:** Start with `### Bom dia,` on a new line.
-    * **Content:** Immediately below, add a *short, inspiring motivational quote* of your own choice in Portuguese, enclosed in italics.
-    * **Separator:** End this section with a horizontal rule (`---`).
+1.  **GREETING & MOTIVATION**
+    * Display "Bom dia," followed by an inspiring motivational quote in italics.
 
-2.  ### AGENDA DE HOJE
-    * **Syntax:** Start with `### 📅 Agenda de Hoje` on a new line.
-    * **Content:** Present a bulleted list of appointments in `**HH:MM** – Appointment Title` format. Use placeholders if no events exist.
-    * **Separator:** End with a horizontal rule (`---`).
+2.  **AGENDA DE HOJE**
+    * Section header: `📅 Agenda de Hoje`
+    * Display an unordered list of the user's appointments (`HH:MM - Título`). Provide a fallback message if empty.
 
-3.  ### EMAILS IMPORTANTES
-    * **Syntax:** Start with `### 🚨 Emails Importantes (Ação Imediata)` on a new line.
-    * **Content:** Present critical emails using Markdown blockquotes (`>`). Each blockquote must include: `**Remetente:** [Sender Name] | **Assunto:** [Subject Summary]`. If empty, note that no critical emails exist.
-    * **Separator:** End with a horizontal rule (`---`).
+3.  **RESUMO DA CAIXA DE ENTRADA**
+    * Section header: `📊 Resumo da Caixa de Entrada`
+    * Display a summary table/grid with counts for: Importantes, Outros (Infos), Newsletters, and Promoções.
 
-4.  ### RESUMO DE NOTÍCIAS
-    * **Syntax:** Start with `### 📰 Resumo de Notícias & Newsletters` on a new line.
-    * **Content:** Group newsletters by theme. Present as a bulleted list: `* **[Theme Name]:** Concise main theme summary.`
-    * **Separator:** End with a horizontal rule (`---`).
+4.  **EMAILS IMPORTANTES**
+    * Section header: `🚨 Emails Importantes (Ação Imediata)`
+    * Render each critical email alerting the user to priority actions. Provide a fallback message if empty.
 
-5.  ### RESUMO DOS EMAILS
-    * **Syntax:** Start with `### ✉️ Resumo dos Emails (Geral)` on a new line.
-    * **Content:** Present a bulleted list of concise summaries of non-critical, processed emails. Format: `* **[General Topic]:** Quick summary of action/information.`
+5.  **TOP 5 NOTÍCIAS**
+    * Section header: `📰 Top 5 Notícias do Dia`
+    * Provide an ordered list (`<ol>`) of the top 5 relevant news items.
 
-6.  ### LISTA DE EMAILS PROCESSADOS
-    * **Syntax:** Start with `### 🛠️ Lista de Emails Processados (Log)` on a new line.
-    * **Content:** Provide a simple, raw log of all processed email IDs and brief descriptions using monospace text: ``* `id_[ID]` | [Subject Snippet]``.
+6.  **RADAR DE PROMOÇÕES E VIAGENS**
+    * Section header: `🏷️ Radar de Promoções e Viagens`
+    * Display highlighted promotions and a clean interface for monitored flight prices.
 
-## Style Guidelines
+7.  **RESUMO DOS EMAILS VALIDADOS**
+    * Section header: `✉️ Resumo dos Emails Validados`
+    * Render a **single generated text paragraph** summarizing the non-critical emails (what was read, important themes, etc). **Do not use bullet lists for normal emails.** Provide a fallback message if empty.
 
-* **Tone:** Professional, organized, and encouraging.
-* **Conciseness:** Crucial. Summaries must be extremely brief.
-* **Scanning:** Use bold text (`**`) and emojis to guide the user’s eye quickly.
-* **No placeholders:** Ensure real content is generated or clearly marked as "Nenhum compromisso/email hoje" if empty.
+8.  **LOG DE EMAILS PROCESSADOS**
+    * Section header: `🛠️ Log de Emails Processados`
+    * Present a raw monospace log of all processed email subjects (do not show IDs).
 
-
-
-## HTML Structure
-1.  **Greeting**: `<h1>Bom dia,</h1>`
-2.  **Motivation**: `<p style="font-style: italic; color: #555;">[Motivational Phrase]</p>`
-3.  **Sections**: Use `<h2>` for section headers with a bottom border or spacing.
-4.  **Agenda**: Table or list with bold times.
-5.  **Summaries**: Unordered lists for normal emails and news.
-6.  **Important**: A `div` with a light red or yellow background (`#fff4f4` or `#fffde7`) and a border to highlight critical items.
-
-## CSS Standards (Inline Only)
-- **Font**: Sans-serif (Arial, Helvetica, sans-serif).
-- **Body**: Max-width 600px, centered, padding 20px.
-- **Colors**:
-  - Headers: `#1a1a1a`
-  - Text: `#333333`
-  - Links: `#0066cc`
-- **Spacing**: Margin-bottom 15px for paragraphs and 25px for headers.
-
-## Verification
-- Ensure all tags are closed.
-- Ensure no external CSS or `<style>` blocks.
-- Check mobile responsiveness (simple 1-column layout).
+## Visual Directives
+- Apply UI/UX Pro Max elements via safe inline CSS.
+- Ensure appropriate spacing (`margin`, `padding`), soft borders, readable fonts without external web fonts.
+- Use explicit visual hierarchy (titles > lists > metadata).

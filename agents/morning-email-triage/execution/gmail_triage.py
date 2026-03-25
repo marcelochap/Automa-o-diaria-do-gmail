@@ -18,7 +18,7 @@ def mark_as_read(msg_id, env):
         '--json', json.dumps({"removeLabelIds": ["UNREAD"]})
     ]
     try:
-        res = subprocess.run(modify_args, capture_output=True, text=True, env=env)
+        res = subprocess.run(modify_args, capture_output=True, text=True, env=env, encoding='utf-8')
         if res.returncode != 0:
             print(f">>> GWS Erro ao marcar como lido {msg_id}: {res.stdout.strip()}")
             return False
@@ -36,7 +36,7 @@ def fetch_all_contacts(env):
         '--format', 'json'
     ]
     try:
-        res = subprocess.run(args, capture_output=True, text=True, env=env)
+        res = subprocess.run(args, capture_output=True, text=True, env=env, encoding='utf-8')
         if res.returncode != 0:
             print(f">>> GWS Erro ao acessar contatos: {res.stdout.strip()}")
             return set()
@@ -69,7 +69,7 @@ def check_if_user_replied(thread_id, env):
         '--params', json.dumps({"userId": "me", "id": thread_id})
     ]
     try:
-        res = subprocess.run(args, capture_output=True, text=True, env=env)
+        res = subprocess.run(args, capture_output=True, text=True, env=env, encoding='utf-8')
         if res.returncode == 0:
             data = json.loads(res.stdout)
             for m in data.get('messages', []):
@@ -92,6 +92,7 @@ def list_unread_messages():
         "stats": {"Total": 0, "Importante": 0, "Promoção": 0, "Newsletter": 0, "Outros": 0},
         "critical_emails": [],
         "normal_emails": [],
+        "normal_emails_summary": "",
         "the_news_briefing": "",
         "full_list": [],
         "processed_log": [],      # For UI log
@@ -197,6 +198,21 @@ def list_unread_messages():
         print(f"Error executing gws: {e.stderr}")
     except json.JSONDecodeError:
         print("Error parsing GWS output as JSON.")
+    
+    # Generate Paragraph Summary for Normal Emails
+    normal_count = len(triage_data["normal_emails"])
+    if normal_count > 0:
+        examples = [f"'{e['subject'][:40]}...'" if len(e['subject']) > 40 else f"'{e['subject']}'" for e in triage_data["normal_emails"][:2]]
+        if len(examples) == 1:
+            subj_str = examples[0]
+        elif len(examples) >= 2:
+            subj_str = f"{examples[0]} e {examples[1]}"
+        else:
+            subj_str = ""
+            
+        triage_data["normal_emails_summary"] = f"Nas últimas 24 horas, recebemos {triage_data['stats']['Outros']} notificações gerais e {triage_data['stats']['Newsletter']} newsletters. Destacam-se informes como {subj_str}, que compõem as leituras do dia. Todos os emails não críticos já constam como lidos e foram devidamente arquivados conforme sua triagem."
+    else:
+        triage_data["normal_emails_summary"] = "Não houve e-mails de rotina, automações ou informes gerais para revisar na sua triagem de hoje."
     
     return triage_data
 
