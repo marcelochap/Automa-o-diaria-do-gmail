@@ -89,7 +89,8 @@ def main():
         "critical_emails": triage_results["critical_emails"],
         "normal_emails": triage_results["normal_emails"],
         "stats": triage_results["stats"],
-        "the_news_briefing": triage_results["the_news_briefing"],
+        "the_news_briefing": triage_results.get("the_news_briefing", ""),
+        "top_news": triage_results.get("top_news", []),
         "full_list": triage_results["full_list"],
         "processed_log": triage_results["processed_log"]
     }

@@ -1,4 +1,24 @@
 import random
+import json
+import os
+
+def load_motivations():
+    """Loads motivations from assets/motivations.json with a safe fallback."""
+    try:
+        # Resolve path relative to this script's directory
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # go up to project root then assets
+        root_dir = os.path.abspath(os.path.join(current_dir, "../../../"))
+        json_path = os.path.join(root_dir, "assets", "motivations.json")
+        
+        if os.path.exists(json_path):
+            with open(json_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"Warning: Could not load motivations.json: {e}")
+    
+    # Fallback if file is missing or error occurs
+    return ["Que hoje seja um dia de grandes conquistas e foco total no que importa."]
 
 def format_briefing(data):
     """
@@ -7,13 +27,7 @@ def format_briefing(data):
     """
     
     # 1. GREETING & MOTIVATION
-    motivations = [
-        "A persistência é o caminho do êxito.",
-        "O sucesso é a soma de pequenos esforços repetidos dia após dia.",
-        "Não espere por oportunidades, crie-as.",
-        "Sua única limitação é aquela que você impõe em sua própria mente.",
-        "Que hoje seja um dia de grandes conquistas e foco total no que importa."
-    ]
+    motivations = load_motivations()
     motivation = random.choice(motivations)
     
     # Design Tokens
@@ -141,16 +155,42 @@ def format_briefing(data):
             <div style="{hr_style}"></div>
 
             <!-- 5. TOP 5 NOTICIAS -->
-            <h3 style="{h3_style}">📰 Top 5 Notícias do Dia</h3>
+            <h3 style="{h3_style}">📰 Top Notícias do Dia</h3>
+    """
+    
+    top_news = data.get('top_news', [])
+    if not top_news:
+        html += f"""
             <div style="background-color: #f8fafc; border: 1px solid {border_color}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                <ol style="margin: 0; padding-left: 20px; color: #334155; font-size: 15px; line-height: 1.6;">
-                    <li style="margin-bottom: 12px;"><strong>Economia:</strong> Banco Central indica nova redução da taxa Selic na próxima reunião</li>
-                    <li style="margin-bottom: 12px;"><strong>Tecnologia:</strong> Nova versão do Claude traz capacidades avançadas de design UI/UX</li>
-                    <li style="margin-bottom: 12px;"><strong>Política:</strong> Acordo internacional de sustentabilidade avança em comitê europeu</li>
-                    <li style="margin-bottom: 12px;"><strong>Mercados:</strong> Ações de big techs operam em alta antes da divulgação</li>
-                    <li style="margin-bottom: 0;"><strong>Brasil:</strong> Setor de serviços cresce acima do esperado no último bimestre</li>
-                </ol>
+                <p style="margin: 0; color: {text_secondary}; font-style: italic; font-size: 14px;">Nenhuma newsletter de notícias processada hoje.</p>
             </div>
+        """
+    else:
+        html += f"""
+            <div style="background-color: #f8fafc; border: 1px solid {border_color}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <ul style="margin: 0; padding-left: 10px; list-style-type: none; color: #334155; font-size: 14px; line-height: 1.5;">
+        """
+        for count, news in enumerate(top_news):
+            source = news.get("source", "Newsletter")
+            title = news.get("title", "Sem título")
+            snippet = news.get("snippet", "")
+            
+            # Remover a borda inferior do ultimo item para o design ficar perfeito
+            li_style = "margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;" if count < len(top_news)-1 else "margin-bottom: 0;"
+            
+            html += f"""
+                    <li style="{li_style}">
+                        <span style="font-weight: 700; color: {accent_blue}; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">{source}</span><br>
+                        <strong style="color: {text_primary}; font-size: 15px;">{title}</strong><br>
+                        <span style="color: {text_secondary}; display: block; margin-top: 6px;">{snippet}</span>
+                    </li>
+            """
+        html += """
+                </ul>
+            </div>
+        """
+        
+    html += f"""
             <div style="{hr_style}"></div>
 
             <!-- 6. RADAR DE PROMOCOES E VIAGENS -->
@@ -225,6 +265,10 @@ if __name__ == "__main__":
             {"category": "Promoção", "subject": "Ofertas Exclusivas de Verão"}
         ],
         "the_news_briefing": "O mercado de tecnologia mantém crescimento estável, com destaque para novos semicondutores.",
+        "top_news": [
+            {"source": "The News", "title": "As manchetes de hoje diretamente da nova Faria Lima", "snippet": "A bolsa operou em alta hoje com as decisões econômicas reveladas após..."},
+            {"source": "G1", "title": "G1 em 1 minuto", "snippet": "As principais atualizações da manhã e o clima pelo país nesta terça-feira chuvosa..."}
+        ],
         "processed_log": [
             {"subject": "Confirmação de Reserva"},
             {"subject": "Newsletter Diária"}

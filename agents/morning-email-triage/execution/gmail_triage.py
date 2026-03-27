@@ -82,34 +82,54 @@ def check_if_user_replied(thread_id, env):
 def list_unread_messages():
     env = os.environ.copy()
     
+class TriageResult:
+    """Class to store triage results with explicit types to satisfy linters."""
+    def __init__(self):
+        self.stats = {"Total": 0, "Importante": 0, "Promoção": 0, "Newsletter": 0, "Outros": 0}
+        self.critical_emails = []
+        self.normal_emails = []
+        self.normal_emails_summary = ""
+        self.the_news_briefing = ""
+        self.top_news = []
+        self.full_list = []
+        self.processed_log = []
+        self.to_archive_ids = []
+
+    def to_dict(self):
+        return {
+            "stats": self.stats,
+            "critical_emails": self.critical_emails,
+            "normal_emails": self.normal_emails,
+            "normal_emails_summary": self.normal_emails_summary,
+            "the_news_briefing": self.the_news_briefing,
+            "top_news": self.top_news,
+            "full_list": self.full_list,
+            "processed_log": self.processed_log,
+            "to_archive_ids": self.to_archive_ids
+        }
+
+def list_unread_messages():
+    env = os.environ.copy()
+    
     # 500 results is usually enough for a daily routine
     list_args = [
         GWS_CMD, 'gmail', 'users', 'messages', 'list',
         '--params', json.dumps({"userId": "me", "labelIds": ["UNREAD"], "maxResults": 500})
     ]
     
-    triage_data = {
-        "stats": {"Total": 0, "Importante": 0, "Promoção": 0, "Newsletter": 0, "Outros": 0},
-        "critical_emails": [],
-        "normal_emails": [],
-        "normal_emails_summary": "",
-        "the_news_briefing": "",
-        "full_list": [],
-        "processed_log": [],      # For UI log
-        "to_archive_ids": []      # IDs that SHOULD be archived (non-critical)
-    }
+    result_obj = TriageResult()
     
     try:
         print("Fetching unread messages...")
-        result = subprocess.run(list_args, capture_output=True, text=True, check=True, env=env, encoding='utf-8')
-        data = json.loads(result.stdout)
+        res = subprocess.run(list_args, capture_output=True, text=True, check=True, env=env, encoding='utf-8')
+        data = json.loads(res.stdout)
         messages = data.get('messages', [])
         
         if not messages:
             print("No unread messages found.")
-            return triage_data
+            return result_obj.to_dict()
 
-        triage_data["stats"]["Total"] = len(messages)
+        result_obj.stats["Total"] = len(messages)
         
         user_contacts = fetch_all_contacts(env)
 
@@ -133,8 +153,8 @@ def list_unread_messages():
             sender = next((h['value'] for h in headers if h['name'] == 'From'), 'Unknown Sender')
             snippet = msg_data.get('snippet', '')
             
-            triage_data["processed_log"].append({"id": msg_id, "subject": subject})
-            triage_data["full_list"].append({"from": sender, "subject": subject})
+            result_obj.processed_log.append({"id": msg_id, "subject": subject})
+            result_obj.full_list.append({"from": sender, "subject": subject})
             
             # Categorization Logic
             category = "Outros"
@@ -144,78 +164,89 @@ def list_unread_messages():
             subject_lower = subject.lower()
             sender_email = extract_email(sender)
             
-            # IMPORTANT: Authorization emails are NOT critical
+            # 1. Authorizations/Alçadas are NOT critical per user request
             if "alçada" in subject_lower:
                 category = "Outros"
                 is_critical = False
-            # Hardcoded Critical
+            # 2. Hardcoded Critical
             elif any(k in sender_lower for k in ["nubank", "prefeitura", "banco", "diretoria"]) or \
                  any(k in subject_lower for k in ["boleto", "vencimento", "fatura", "pagar", "atraso", "urgente"]):
                 category = "Importante"
                 is_critical = True
-                triage_data["stats"]["Importante"] += 1
-            # User Reply Check (SOP Rule)
+                result_obj.stats["Importante"] += 1
+            # 3. User Reply Check
             elif check_if_user_replied(msg_data.get("threadId"), env):
                 category = "Importante"
                 is_critical = True
-                triage_data["stats"]["Importante"] += 1
+                result_obj.stats["Importante"] += 1
                 print(f"Reply detected for thread: {subject[:30]}")
-            # Known Contact check (Implementation of the new SOP rule)
+            # 4. Known Contact check
             elif sender_email in user_contacts:
                 category = "Importante"
                 is_critical = True
-                triage_data["stats"]["Importante"] += 1
-            
-            elif "news" in sender_lower or "newsletter" in sender_lower or "briefing" in subject_lower or "morning" in subject_lower:
+                result_obj.stats["Importante"] += 1
+            # 5. Newsletters
+            elif "news" in sender_lower or "newsletter" in sender_lower or "briefing" in subject_lower or "morning" in subject_lower or "g1" in sender_lower or "cnn" in sender_lower:
                 category = "Newsletter"
-                triage_data["stats"]["Newsletter"] += 1
+                result_obj.stats["Newsletter"] += 1
                 if "the news" in sender_lower:
-                    triage_data["the_news_briefing"] = snippet
-            
+                    result_obj.the_news_briefing = snippet
+                
+                if any(x in sender_lower for x in ["the news", "g1", "cnn"]) or "newsletter" in sender_lower:
+                    if len(result_obj.top_news) < 5:
+                        source = "The News" if "the news" in sender_lower else "G1" if "g1" in sender_lower else "CNN" if "cnn" in sender_lower else "Newsletter"
+                        clean_snippet = snippet[:120].strip() + "..." if len(snippet) > 120 else snippet.strip()
+                        result_obj.top_news.append({
+                            "source": source,
+                            "title": subject,
+                            "snippet": clean_snippet
+                        })
+            # 6. Promotions
             elif any(k in sender_lower for k in ["shein", "aliexpress", "shopee", "amazon", "magalu", "mercado"]) or \
                  any(k in subject_lower for k in ["promo", "oferta", "desconto", "cupom", "sale"]):
                  category = "Promoção"
-                 triage_data["stats"]["Promoção"] += 1
-            
+                 result_obj.stats["Promoção"] += 1
+            # 7. Others
             else:
                 category = "Outros"
-                triage_data["stats"]["Outros"] += 1
+                result_obj.stats["Outros"] += 1
 
             email_info = {"from": sender, "subject": subject, "snippet": snippet, "category": category}
             
             if is_critical:
-                triage_data["critical_emails"].append(email_info)
-                # DO NOT mark as read, DO NOT add to to_archive_ids
+                result_obj.critical_emails.append(email_info)
                 print(f"KEEPING INBOX: {subject[:30]}... ({category})")
             else:
-                triage_data["normal_emails"].append({"category": category, "from": sender, "subject": subject})
-                triage_data["to_archive_ids"].append(msg_id)
-                # Mark as read for non-critical
+                result_obj.normal_emails.append({"category": category, "from": sender, "subject": subject})
+                result_obj.to_archive_ids.append(msg_id)
                 mark_as_read(msg_id, env)
                 print(f"Processed: {subject[:30]}... ({category})")
 
     except subprocess.CalledProcessError as e:
         print(f"Error executing gws: {e.stderr}")
-    except json.JSONDecodeError:
-        print("Error parsing GWS output as JSON.")
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"Data error: {e}")
     
-    # Generate Paragraph Summary for Normal Emails
-    normal_count = len(triage_data["normal_emails"])
-    if normal_count > 0:
-        examples = [f"'{e['subject'][:40]}...'" if len(e['subject']) > 40 else f"'{e['subject']}'" for e in triage_data["normal_emails"][:2]]
-        if len(examples) == 1:
-            subj_str = examples[0]
-        elif len(examples) >= 2:
-            subj_str = f"{examples[0]} e {examples[1]}"
-        else:
-            subj_str = ""
+    # Narrative Summary Generation
+    if result_obj.normal_emails:
+        subjects_for_summary = []
+        for e in result_obj.normal_emails[:2]:
+            subj = e.get("subject", "Sem Assunto")
+            truncated = f"'{subj[:40]}...'" if len(subj) > 40 else f"'{subj}'"
+            subjects_for_summary.append(truncated)
             
-        triage_data["normal_emails_summary"] = f"Nas últimas 24 horas, recebemos {triage_data['stats']['Outros']} notificações gerais e {triage_data['stats']['Newsletter']} newsletters. Destacam-se informes como {subj_str}, que compõem as leituras do dia. Todos os emails não críticos já constam como lidos e foram devidamente arquivados conforme sua triagem."
+        subj_str = " e ".join(subjects_for_summary) if subjects_for_summary else "emails diversos"
+        
+        result_obj.normal_emails_summary = (
+            f"Nas últimas 24 horas, recebemos {result_obj.stats['Outros']} notificações gerais e {result_obj.stats['Newsletter']} newsletters. "
+            f"Destacam-se informes como {subj_str}, que compõem as leituras do dia. "
+            "Todos os emails não críticos já constam como lidos e foram devidamente arquivados conforme sua triagem."
+        )
     else:
-        triage_data["normal_emails_summary"] = "Não houve e-mails de rotina, automações ou informes gerais para revisar na sua triagem de hoje."
+        result_obj.normal_emails_summary = "Não houve e-mails de rotina, automações ou informes gerais para revisar na sua triagem de hoje."
     
-    return triage_data
+    return result_obj.to_dict()
 
 if __name__ == "__main__":
-    result = list_unread_messages()
-    print(json.dumps(result, indent=2))
+    routine_result = list_unread_messages()
+    print(json.dumps(routine_result, indent=2))
