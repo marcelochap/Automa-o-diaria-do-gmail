@@ -178,10 +178,14 @@ def format_briefing(data):
             # Remover a borda inferior do ultimo item para o design ficar perfeito
             li_style = "margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;" if count < len(top_news)-1 else "margin-bottom: 0;"
             
+            msg_id = news.get("id")
+            link_tag_open = f'<a href="https://mail.google.com/mail/u/0/#inbox/{msg_id}" target="_blank" style="text-decoration: none; color: {text_primary}; cursor: pointer;">' if msg_id else f'<span style="color: {text_primary};">'
+            link_tag_close = '</a>' if msg_id else '</span>'
+            
             html += f"""
                     <li style="{li_style}">
                         <span style="font-weight: 700; color: {accent_blue}; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">{source}</span><br>
-                        <strong style="color: {text_primary}; font-size: 15px;">{title}</strong><br>
+                        {link_tag_open}<strong style="font-size: 15px;">{title}</strong>{link_tag_close}<br>
                         <span style="color: {text_secondary}; display: block; margin-top: 6px;">{snippet}</span>
                     </li>
             """
@@ -195,25 +199,71 @@ def format_briefing(data):
 
             <!-- 6. RADAR DE PROMOCOES E VIAGENS -->
             <h3 style="{h3_style}">🏷️ Radar de Promoções e Viagens</h3>
-            
+    """
+    
+    flight_deals = data.get('flight_deals', [])
+    html += f"""
             <div style="background-color: #f8fafc; border: 1px solid {border_color}; border-left: 4px solid {accent_blue}; padding: 15px 20px; border-radius: 8px; margin-bottom: 15px;">
                 <div style="font-size: 12px; text-transform: uppercase; color: {accent_blue}; font-weight: 700; margin-bottom: 8px;">✈️ Passagens Monitoradas</div>
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid {border_color}; padding-bottom: 10px; margin-bottom: 10px;">
+    """
+    
+    if not flight_deals:
+        html += f"""
+                <div style="color: {text_secondary}; font-size: 14px; font-style: italic;">
+                    Não houve alteração nos valores das passagens para hoje. Nenhum email sobre voos detectado.
+                </div>
+        """
+    else:
+        for index, deal in enumerate(flight_deals):
+            border_bottom = f"border-bottom: 1px solid {border_color}; padding-bottom: 10px; margin-bottom: 10px;" if index < len(flight_deals) - 1 else ""
+            html += f"""
+                <div style="display: flex; justify-content: space-between; align-items: center; {border_bottom}">
                     <div>
-                        <div style="font-weight: 700; color: {text_primary}; font-size: 15px;">Brasília (BSB) ➔ São Paulo (GRU)</div>
-                        <div style="color: {text_secondary}; font-size: 13px;">Latam - 15 Abr a 18 Abr</div>
+                        <div style="font-weight: 700; color: {text_primary}; font-size: 15px;">{deal.get('description', 'Sem Detalhes')}</div>
+                        <div style="color: {text_secondary}; font-size: 13px;">{deal.get('source', 'Companhia Aérea')}</div>
                     </div>
-                    <div style="text-align: right;">
-                        <span style="background-color: #dcfce7; color: #166534; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 14px;">R$ 485 📉</span>
+                    <div style="text-align: right; margin-left: 15px;">
+                        <span style="background-color: #dcfce7; color: #166534; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 14px; white-space: nowrap;">{deal.get('price', '')}</span>
                     </div>
                 </div>
-            </div>
+            """
+    
+    html += "</div>"
 
+    shopping_deals = data.get('shopping_deals', [])
+    html += f"""
             <div style="background-color: #ffffff; border: 1px solid {border_color}; border-left: 4px solid #10b981; padding: 15px 20px; border-radius: 8px;">
-                <div style="font-size: 12px; text-transform: uppercase; color: #10b981; font-weight: 700; margin-bottom: 8px;">🛍️ Ofertas em Destaque</div>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="font-size: 14px; color: #334155;"><strong>Ofertas de hoje:</strong> Não deixe de conferir seus e-mails promocionais.</li>
-                </ul>
+                <div style="font-size: 12px; text-transform: uppercase; color: #10b981; font-weight: 700; margin-bottom: 12px;">🛍️ Ofertas em Destaque</div>
+    """
+    
+    if not shopping_deals:
+        html += f"""
+                <div style="color: {text_secondary}; font-size: 14px; font-style: italic;">
+                    Nenhuma promoção de produtos detectada na triagem de hoje.
+                </div>
+        """
+    else:
+        for index, deal in enumerate(shopping_deals):
+            border_bottom = f"border-bottom: 1px solid {border_color}; padding-bottom: 10px; margin-bottom: 10px;" if index < len(shopping_deals) - 1 else ""
+            
+            # Format display strings
+            product_name = deal.get('description', 'Oferta Genérica')
+            site_name = deal.get('source', 'Loja').upper()
+            price_amount = deal.get('price', 'Ver e-mail')
+            
+            html += f"""
+                <div style="display: flex; justify-content: space-between; align-items: center; {border_bottom}">
+                    <div style="flex: 1; padding-right: 15px;">
+                        <div style="font-weight: 600; color: {text_primary}; font-size: 14px; margin-bottom: 2px; line-height: 1.3;">{product_name}</div>
+                        <div style="color: {text_secondary}; font-size: 12px; font-weight: 500;">🛒 {site_name}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="color: #10b981; font-weight: 700; font-size: 15px; white-space: nowrap;">{price_amount}</span>
+                    </div>
+                </div>
+            """
+            
+    html += f"""
             </div>
             <div style="{hr_style}"></div>
 

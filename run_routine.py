@@ -92,7 +92,9 @@ def main():
         "the_news_briefing": triage_results.get("the_news_briefing", ""),
         "top_news": triage_results.get("top_news", []),
         "full_list": triage_results["full_list"],
-        "processed_log": triage_results["processed_log"]
+        "processed_log": triage_results["processed_log"],
+        "flight_deals": triage_results.get("flight_deals", []),
+        "shopping_deals": triage_results.get("shopping_deals", [])
     }
     
     html_content = format_briefing(full_data)

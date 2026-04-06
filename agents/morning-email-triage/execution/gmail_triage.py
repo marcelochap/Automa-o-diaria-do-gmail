@@ -94,6 +94,8 @@ class TriageResult:
         self.full_list = []
         self.processed_log = []
         self.to_archive_ids = []
+        self.flight_deals = []
+        self.shopping_deals = []
 
     def to_dict(self):
         return {
@@ -105,7 +107,9 @@ class TriageResult:
             "top_news": self.top_news,
             "full_list": self.full_list,
             "processed_log": self.processed_log,
-            "to_archive_ids": self.to_archive_ids
+            "to_archive_ids": self.to_archive_ids,
+            "flight_deals": self.flight_deals,
+            "shopping_deals": self.shopping_deals
         }
 
 def list_unread_messages():
@@ -199,13 +203,33 @@ def list_unread_messages():
                         result_obj.top_news.append({
                             "source": source,
                             "title": subject,
-                            "snippet": clean_snippet
+                            "snippet": clean_snippet,
+                            "id": msg_id
                         })
             # 6. Promotions
-            elif any(k in sender_lower for k in ["shein", "aliexpress", "shopee", "amazon", "magalu", "mercado"]) or \
-                 any(k in subject_lower for k in ["promo", "oferta", "desconto", "cupom", "sale"]):
+            elif any(k in sender_lower for k in ["shein", "aliexpress", "shopee", "amazon", "magalu", "mercado", "latam", "gol", "azul", "decolar", "123milhas", "maxmilhas", "skyscanner", "kayak"]) or \
+                 any(k in subject_lower for k in ["promo", "oferta", "desconto", "cupom", "sale", "passagem", "voo", "aérea"]):
                  category = "Promoção"
                  result_obj.stats["Promoção"] += 1
+                 
+                 price_match = re.search(r'R\$\s*[\d\.,]+', subject + " " + snippet)
+                 price_str = price_match.group(0) if price_match else "Preço no email"
+                 
+                 source_name = sender.split('<')[0].strip() if '<' in sender else sender
+                 
+                 if any(k in sender_lower for k in ["latam", "gol", "azul", "decolar", "skyscanner", "kayak", "123milhas", "maxmilhas"]) or \
+                    any(k in subject_lower for k in ["passagem", "voo", "aérea"]):
+                     result_obj.flight_deals.append({
+                         "source": source_name,
+                         "description": subject,
+                         "price": price_str
+                     })
+                 else:
+                     result_obj.shopping_deals.append({
+                         "source": source_name,
+                         "description": subject,
+                         "price": price_str
+                     })
             # 7. Others
             else:
                 category = "Outros"
