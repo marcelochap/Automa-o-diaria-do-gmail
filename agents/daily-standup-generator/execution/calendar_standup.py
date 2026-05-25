@@ -6,6 +6,10 @@ from datetime import datetime, time
 import pytz
 from dotenv import load_dotenv
 
+# Garante suporte a caracteres UTF-8 (emojis) no terminal Windows
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # Load credentials from .env
 load_dotenv()
 
@@ -43,8 +47,17 @@ def get_events_for_calendar(calendar_id):
         result = subprocess.run(args, capture_output=True, text=True, check=True, encoding='utf-8')
         data = json.loads(result.stdout)
         return data.get('items', [])
+    except subprocess.CalledProcessError as e:
+        print(f">>> GWS Erro ao acessar calendário {calendar_id}: {e.stderr}")
+        err_msg = str(e.stderr).lower()
+        if any(keyword in err_msg for keyword in ["credentials", "auth", "keyring", "token", "sign"]):
+            raise e
+        return []
+    except FileNotFoundError as e:
+        print(f">>> GWS CLI executável não encontrado: {e}")
+        raise e
     except Exception as e:
-        # Silently fail for individual calendars to not break the whole flow
+        print(f">>> Erro inesperado ao acessar calendário {calendar_id}: {e}")
         return []
 
 def generate_standup():

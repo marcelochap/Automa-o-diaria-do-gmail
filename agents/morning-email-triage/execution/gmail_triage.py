@@ -5,6 +5,10 @@ import sys
 import re
 from dotenv import load_dotenv
 
+# Garante suporte a caracteres UTF-8 (emojis) no terminal Windows
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # Load credentials from .env
 load_dotenv()
 
@@ -222,13 +226,15 @@ def list_unread_messages():
                      result_obj.flight_deals.append({
                          "source": source_name,
                          "description": subject,
-                         "price": price_str
+                         "price": price_str,
+                         "id": msg_id
                      })
                  else:
                      result_obj.shopping_deals.append({
                          "source": source_name,
                          "description": subject,
-                         "price": price_str
+                         "price": price_str,
+                         "id": msg_id
                      })
             # 7. Others
             else:
@@ -248,8 +254,10 @@ def list_unread_messages():
 
     except subprocess.CalledProcessError as e:
         print(f"Error executing gws: {e.stderr}")
+        raise e
     except (json.JSONDecodeError, KeyError) as e:
         print(f"Data error: {e}")
+        raise e
     
     # Narrative Summary Generation
     if result_obj.normal_emails:

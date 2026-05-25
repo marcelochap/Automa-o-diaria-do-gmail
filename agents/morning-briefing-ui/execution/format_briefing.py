@@ -216,10 +216,13 @@ def format_briefing(data):
     else:
         for index, deal in enumerate(flight_deals):
             border_bottom = f"border-bottom: 1px solid {border_color}; padding-bottom: 10px; margin-bottom: 10px;" if index < len(flight_deals) - 1 else ""
+            msg_id = deal.get("id")
+            link_tag_open = f'<a href="https://mail.google.com/mail/u/0/#inbox/{msg_id}" target="_blank" style="text-decoration: none; color: {text_primary}; cursor: pointer;">' if msg_id else f'<span style="color: {text_primary};">'
+            link_tag_close = '</a>' if msg_id else '</span>'
             html += f"""
                 <div style="display: flex; justify-content: space-between; align-items: center; {border_bottom}">
                     <div>
-                        <div style="font-weight: 700; color: {text_primary}; font-size: 15px;">{deal.get('description', 'Sem Detalhes')}</div>
+                        <div style="font-weight: 700; font-size: 15px;">{link_tag_open}{deal.get('description', 'Sem Detalhes')}{link_tag_close}</div>
                         <div style="color: {text_secondary}; font-size: 13px;">{deal.get('source', 'Companhia Aérea')}</div>
                     </div>
                     <div style="text-align: right; margin-left: 15px;">
@@ -251,10 +254,14 @@ def format_briefing(data):
             site_name = deal.get('source', 'Loja').upper()
             price_amount = deal.get('price', 'Ver e-mail')
             
+            msg_id = deal.get("id")
+            link_tag_open = f'<a href="https://mail.google.com/mail/u/0/#inbox/{msg_id}" target="_blank" style="text-decoration: none; color: {text_primary}; cursor: pointer;">' if msg_id else f'<span style="color: {text_primary};">'
+            link_tag_close = '</a>' if msg_id else '</span>'
+            
             html += f"""
                 <div style="display: flex; justify-content: space-between; align-items: center; {border_bottom}">
                     <div style="flex: 1; padding-right: 15px;">
-                        <div style="font-weight: 600; color: {text_primary}; font-size: 14px; margin-bottom: 2px; line-height: 1.3;">{product_name}</div>
+                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 2px; line-height: 1.3;">{link_tag_open}{product_name}{link_tag_close}</div>
                         <div style="color: {text_secondary}; font-size: 12px; font-weight: 500;">🛒 {site_name}</div>
                     </div>
                     <div style="text-align: right;">
@@ -267,18 +274,7 @@ def format_briefing(data):
             </div>
             <div style="{hr_style}"></div>
 
-            <!-- 7. RESUMO DOS EMAILS (PARAGRAFO) -->
-            <h3 style="{h3_style}">✉️ Resumo dos Emails Validados</h3>
-    """
-    
-    summary_paragraph = data.get('normal_emails_summary', "Não houve resumo gerado para os e-mails normais hoje.")
-    html += f"""
-            <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; font-size: 15px; color: #334155; line-height: 1.6; border-left: 4px solid {text_secondary};">
-                <strong>Resumo:</strong> {summary_paragraph}
-            </div>
-            <div style="{hr_style}"></div>
-
-            <!-- 8. LOG DE EMAILS PROCESSADOS -->
+            <!-- 7. LOG DE EMAILS PROCESSADOS -->
             <h3 style="{h3_style}">🛠️ Log de Emails Processados</h3>
             <div style="font-family: 'Courier New', monospace; font-size: 12px; color: {text_secondary}; background-color: #f1f5f9; padding: 20px; border-radius: 8px;">
     """

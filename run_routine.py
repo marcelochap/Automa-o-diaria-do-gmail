@@ -4,6 +4,10 @@ import json
 import subprocess
 from datetime import datetime
 
+# Garante suporte a caracteres UTF-8 (emojis) no terminal Windows
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # Add paths for imports
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, 'agents', 'morning-email-triage', 'execution'))
@@ -141,8 +145,10 @@ def main():
             
         else:
             print(f"Erro ao enviar e-mail: {result.stderr}")
+            sys.exit(1)
     except Exception as e:
         print(f"Falha no processo de envio: {e}")
+        sys.exit(1)
     finally:
         if os.path.exists(rfc_path):
             os.remove(rfc_path)
